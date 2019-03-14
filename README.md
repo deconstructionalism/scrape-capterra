@@ -1,0 +1,1 @@
+Copy files in `selenium-drivers` to `/usr/bin` or `/usr/local/bin`.
