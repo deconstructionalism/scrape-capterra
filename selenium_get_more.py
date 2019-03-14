@@ -2,13 +2,13 @@ from selenium import webdriver
 from selenium.common.exceptions import ElementNotVisibleException
 from time import sleep
 
-def get_all(url, expand=True):
+def get_all(url, debug=False):
 
     driver = webdriver.Chrome()
 
     print(url)
     driver.get(url)
-    if expand:
+    if not debug:
         reload_count = 0
         while True:
             try:
