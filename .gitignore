@@ -143,3 +143,6 @@ dmypy.json
 ### Logs and Data ###
 logs/
 scraped_data
+
+### VS Code ###
+.vscode/

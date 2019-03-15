@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import requests
 import sys
@@ -18,14 +20,14 @@ def fault_tolerant(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            # extract error data from the Exception and log it in a nice format.
+            # extract error data from the Exception and log it.
             error = {
                 'source': func.__name__,
-                'line_number': sys.exc_info()[-1].tb_lineno,
                 'name': e.__class__.__name__,
                 'msg': str(e)
             }
-            log_text = 'Excepted Fault: {source} generated a {name}: {msg}'.format(**error)
+            error_template = 'Excepted: {source} generated a {name}: {msg}'
+            log_text = error_template.format(**error)
             logging.debug(log_text)
 
             # it is important for some functions that to receive a value on
@@ -106,17 +108,26 @@ class PlatformPageScraper(CapterraScraper):
 
     @fault_tolerant
     def extract_ratings(self):
-        node = self.find_element_sibling(self.dom, 'h2', 'Average Ratings', 'ul')
+        node = self.find_element_sibling(self.dom,
+                                         'h2',
+                                         'Average Ratings',
+                                         'ul')
         return self.consume_list(node)
 
     @fault_tolerant
     def extract_product_details(self):
-        node = self.find_element_sibling(self.dom, 'h2', 'Product Details', 'ul')
+        node = self.find_element_sibling(self.dom, 
+                                         'h2',
+                                         'Product Details',
+                                         'ul')
         return self.consume_list(node, True)
 
     @fault_tolerant
     def extract_vendor_details(self):
-        node = self.find_element_sibling(self.dom, 'h2', 'Vendor Details', 'ul')
+        node = self.find_element_sibling(self.dom,
+                                         'h2',
+                                         'Vendor Details',
+                                         'ul')
         return list(filter(None, [li.text for li in node.find_all('li')]))
 
     @fault_tolerant
@@ -135,7 +146,10 @@ class PlatformPageScraper(CapterraScraper):
             feature_list_items = feature_list.find_all('li', 'ss-check')
             features = [node.text for node in feature_list_items]
             keys = list(filter(None, features))
-            values = ['feature-disabled' not in node.get('class') for node in feature_list_items]
+            values = [
+                'feature-disabled' not in node.get('class')
+                for node in feature_list_items
+            ]
             return dict(zip(keys, values))
 
         for feature_list in feature_lists:
@@ -172,7 +186,8 @@ class PlatformReviewScraper(CapterraScraper):
 
     def scrape_data(self):
         self.data['title'] = self.extract_title()
-        self.data['likelihood_reccomendation'] = self.extract_likelihood_reccomendation()
+        self.data['likelihood_recommendation'] = \
+            self.extract_likelihood_recommendation()
         self.data['ratings'] = self.extract_ratings()
         self.data['reactions'] = self.extract_reactions()
 
@@ -181,7 +196,7 @@ class PlatformReviewScraper(CapterraScraper):
         return self.review_node.select('q')[0].text
 
     @fault_tolerant
-    def extract_likelihood_reccomendation(self):
+    def extract_likelihood_recommendation(self):
         return self.review_node.select('.gauge-svg-image')[0]['alt']
 
     @fault_tolerant
@@ -189,7 +204,10 @@ class PlatformReviewScraper(CapterraScraper):
 
         ratings = {}
 
-        rating_nodes = self.review_node.find_all('span', class_=lambda x: False if not x else 'reviews-' in x)
+        def select_rating_nodes(css):
+            return False if not css else 'reviews-' in css
+        rating_nodes = self.review_node.find_all('span',
+                                                 class_=select_rating_nodes)
         rating_nodes.extend(self.review_node.select('.overall-rating'))
 
         @fault_tolerant
@@ -197,7 +215,8 @@ class PlatformReviewScraper(CapterraScraper):
             return self.clean_up_text(rating_node.get_text())
 
         for rating_node in rating_nodes:
-            rating_type = list(filter(lambda x: 'rating' in x, rating_node.get('class')))[0]
+            rating_type = list(filter(lambda x: 'rating' in x,
+                                      rating_node.get('class')))[0]
             ratings[rating_type] = get_rating(rating_node)
 
         return ratings

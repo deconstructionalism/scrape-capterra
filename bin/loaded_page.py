@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from selenium import webdriver
 from time import sleep
 
@@ -17,8 +19,8 @@ class LoadedPage(object):
 
     def close_popup(self):
         try:
-            close_button = self.driver.find_element_by_class_name('.qual_x_svg_x')
-            close_button.click()
+            close = self.driver.find_element_by_class_name('.qual_x_svg_x')
+            close.click()
             sleep(1)
         except Exception:
             pass
@@ -26,9 +28,9 @@ class LoadedPage(object):
     def expand_page_data(self):
         while True:
             try:
-                elem = self.driver.find_element_by_class_name('show-more-reviews')
+                more = self.driver.find_element_by_class_name('show-more-reviews')
                 sleep(5)
-                elem.click()
+                mode.click()
                 sleep(4)
             except Exception:
                 break
