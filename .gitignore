@@ -140,9 +140,5 @@ dmypy.json
 
 # End of https://www.gitignore.io/api/python,linux
 
-### Logs and Data ###
-logs/
-scraped_data
-
 ### VS Code ###
 .vscode/
