@@ -29,8 +29,6 @@ def set_up_logging(debug=False):
     logging.getLogger().addHandler(console)
 
 
-
-
 def main(url):
 
     debug = False

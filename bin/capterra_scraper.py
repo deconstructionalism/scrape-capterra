@@ -1,6 +1,7 @@
 import logging
 import requests
 import sys
+import traceback
 from bs4 import BeautifulSoup
 from . selenium_get_more import get_all
 
@@ -24,8 +25,8 @@ def fault_tolerant(func):
                 'name': e.__class__.__name__,
                 'msg': str(e)
             }
-            log_text = 'Excepted Fault: {source} generated a {name} on line {line_number}: {msg}'.format(**error)
-            logging.debug(log_text)
+            log_text = 'Excepted Fault: {source} generated a {name}: {msg}'.format(**error)
+            # logging.debug(traceback.print_exc())
 
             # it is important for some functions that to receive a value on
             # Exception to indicate inability to extract data. You can change
@@ -205,15 +206,21 @@ class PlatformReviewScraper(CapterraScraper):
     def extract_reactions(self):
 
         reactions = {}
-
-        reaction_nodes = self.review_node.select('.review-comments > p')
+        reaction_nodes = self.review_node.select('.review-comments p')
 
         @fault_tolerant
         def extract_reaction(reaction_node):
-            return reaction_node.find(text=True, recursive=False)
+            children = reaction_node.find_all(recursive=False)
+            if len(children) == 0:
+                return False
+
+            reaction_type = children[0].text.replace(':', '')
+            reaction_data = reaction_node.find(text=True, recursive=False)
+            return {reaction_type: reaction_data}
 
         for reaction_node in reaction_nodes:
-            reaction_type = reaction_node.find_all(recursive=False)[0].text.replace(':', '')
-            reactions[reaction_type] = extract_reaction(reaction_node)
+            reaction_data = extract_reaction(reaction_node)
+            if reaction_data:
+                reactions.update(**reaction_data)
 
         return reactions
