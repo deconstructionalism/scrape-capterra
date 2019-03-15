@@ -50,27 +50,27 @@ def main(url):
     dom = BeautifulSoup(r.text, 'html.parser')
 
     # find all the anchor tags in the DOM tree that link to reviews
-    lms_buttons = dom.find_all('a', 'reviews-count')
+    platform_buttons = dom.find_all('a', 'reviews-count')
 
     # get all the actual links from the anchor tags
-    lms_links = [base_url.format(node['href']) for node in lms_buttons]
+    platform_links = [base_url.format(node['href']) for node in platform_buttons]
 
     buffer_file_path = os.path.join(os.getcwd(), 'scraped_data', '.extraction-buffer.tmp')
     output_file_path = os.path.join(os.getcwd(), 'scraped_data', 'data.json')
 
-    for url in lms_links:
-        logging.info('Extracting LMS data from {}'.format(url))
-        lms_data = PlatformPageScraper(url, debug).data
-        logging.info('Extracted data from {}\n'.format(lms_data['name']))
+    for url in platform_links:
+        logging.info('Extracting platform data from {}'.format(url))
+        platform_data = PlatformPageScraper(url, debug).data
+        logging.info('Extracted data from {}\n'.format(platform_data['name']))
 
         with open(buffer_file_path, 'a') as cache_f:
-            cache_f.write(json.dumps(lms_data))
+            cache_f.write(json.dumps(platform_data))
             cache_f.write('# NEXT CHUNK #')
 
     with open(buffer_file_path, 'r') as cache_f:
         cached_data = cache_f.read().split('# NEXT CHUNK #')
         cached_data = filter(None, cached_data)
-        all_data = [json.loads(lms_data) for lms_data in cached_data]
+        all_data = [json.loads(platform_data) for platform_data in cached_data]
 
     with open(output_file_path, 'w') as output_f:
         output = json.dumps(all_data, indent=2)

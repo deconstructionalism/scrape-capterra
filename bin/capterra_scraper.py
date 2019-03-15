@@ -3,7 +3,7 @@ import requests
 import sys
 import traceback
 from bs4 import BeautifulSoup
-from . selenium_get_more import get_all
+from . loaded_page import LoadedPage
 
 logging = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def fault_tolerant(func):
                 'msg': str(e)
             }
             log_text = 'Excepted Fault: {source} generated a {name}: {msg}'.format(**error)
-            # logging.debug(traceback.print_exc())
+            logging.debug(log_text)
 
             # it is important for some functions that to receive a value on
             # Exception to indicate inability to extract data. You can change
@@ -96,7 +96,7 @@ class PlatformPageScraper(CapterraScraper):
             r = requests.get(self.url)
             self.page_source = r.text
         else:
-            self.page_source = get_all(self.url, self.debug)
+            self.page_source = LoadedPage(self.url, self.debug).page_source
 
         self.dom = BeautifulSoup(self.page_source, 'html.parser')
 
